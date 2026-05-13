@@ -16,7 +16,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         configureStatusItem()
         configurePopover()
-        LoginItemManager.enableLaunchAtLogin()
+        LoginItemManager.applyLaunchAtLoginPreference()
 
         monitor.onStatusChange = { [weak self] status in
             self?.updateStatusIcon(status)
@@ -31,7 +31,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func configureStatusItem() {
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         item.button?.target = self
-        item.button?.action = #selector(togglePopover)
+        item.button?.action = #selector(handleStatusItemClick)
+        item.button?.sendAction(on: [.leftMouseUp, .rightMouseUp])
         item.button?.imagePosition = .imageLeading
         item.button?.toolTip = "Battery history"
 
@@ -59,7 +60,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         button.toolTip = status.tooltip
     }
 
-    @objc private func togglePopover() {
+    @objc private func handleStatusItemClick() {
+        let event = NSApp.currentEvent
+        let isRightClick = event?.type == .rightMouseUp
+        let isControlClick = event?.modifierFlags.contains(.control) == true
+
+        if isRightClick || isControlClick {
+            showStatusMenu()
+        } else {
+            togglePopover()
+        }
+    }
+
+    private func togglePopover() {
         guard let button = statusItem?.button else { return }
 
         if popover.isShown {
@@ -68,5 +81,31 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
             popover.contentViewController?.view.window?.makeKey()
         }
+    }
+
+    private func showStatusMenu() {
+        guard let button = statusItem?.button else { return }
+
+        popover.performClose(nil)
+
+        let menu = NSMenu()
+        let loginItem = NSMenuItem(
+            title: "Launch at Login",
+            action: #selector(toggleLaunchAtLogin),
+            keyEquivalent: ""
+        )
+        loginItem.target = self
+        loginItem.state = LoginItemManager.isLaunchAtLoginPreferred ? .on : .off
+        menu.addItem(loginItem)
+
+        if let event = NSApp.currentEvent {
+            NSMenu.popUpContextMenu(menu, with: event, for: button)
+        } else {
+            menu.popUp(positioning: nil, at: NSPoint(x: 0, y: button.bounds.height), in: button)
+        }
+    }
+
+    @objc private func toggleLaunchAtLogin() {
+        LoginItemManager.setLaunchAtLoginEnabled(!LoginItemManager.isLaunchAtLoginPreferred)
     }
 }
