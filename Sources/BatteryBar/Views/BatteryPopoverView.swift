@@ -4,11 +4,25 @@ struct BatteryPopoverView: View {
     @ObservedObject var monitor: BatteryMonitor
 
     @State private var selectedRange: BatteryHistoryRange = .oneHour
+    @State private var hoveredBucket: BatteryHistoryBucket?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            header
+        VStack(alignment: .leading, spacing: 16) {
+            topControls
 
+            BatteryHistoryChart(
+                samples: monitor.samples,
+                range: selectedRange,
+                hoveredBucket: $hoveredBucket
+            )
+                .frame(height: 124)
+        }
+        .padding(18)
+        .frame(width: 380, height: 220)
+    }
+
+    private var topControls: some View {
+        HStack(alignment: .center, spacing: 14) {
             Picker("History range", selection: $selectedRange) {
                 ForEach(BatteryHistoryRange.allCases) { range in
                     Text(range.title)
@@ -17,52 +31,29 @@ struct BatteryPopoverView: View {
             }
             .pickerStyle(.segmented)
             .labelsHidden()
-
-            BatteryHistoryChart(samples: monitor.samples, range: selectedRange)
-                .frame(height: 124)
-        }
-        .padding(18)
-        .frame(width: 380, height: 278)
-    }
-
-    private var header: some View {
-        HStack(alignment: .center, spacing: 12) {
-            Image(systemName: monitor.currentStatus.symbolName)
-                .font(.system(size: 28, weight: .medium))
-                .symbolRenderingMode(.hierarchical)
-                .foregroundStyle(.primary)
-                .frame(width: 36, height: 36)
-
-            VStack(alignment: .leading, spacing: 3) {
-                Text(title)
-                    .font(.title3.weight(.semibold))
-
-                Text(subtitle)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
+            .frame(width: 220)
 
             Spacer()
+
+            hoverDetail
+                .frame(width: 116, alignment: .trailing)
         }
+        .frame(height: 32)
     }
 
-    private var title: String {
-        guard let percentage = monitor.currentStatus.percentage else {
-            return "Battery unavailable"
+    @ViewBuilder
+    private var hoverDetail: some View {
+        if let sample = hoveredBucket?.sample {
+            VStack(alignment: .trailing, spacing: 2) {
+                Text("\(sample.percentage)%")
+                    .font(.headline.monospacedDigit())
+
+                Text(BatteryDateFormatters.time.string(from: sample.timestamp))
+                    .font(.caption.monospacedDigit())
+                    .foregroundStyle(.secondary)
+            }
+        } else {
+            Color.clear
         }
-
-        return "\(percentage)%"
-    }
-
-    private var subtitle: String {
-        if monitor.currentStatus.isCharging {
-            return "Charging"
-        }
-
-        if monitor.currentStatus.isPluggedIn {
-            return "Plugged in"
-        }
-
-        return "Last hour"
     }
 }

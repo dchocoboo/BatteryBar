@@ -3,8 +3,7 @@ import SwiftUI
 struct BatteryHistoryChart: View {
     let samples: [BatterySample]
     let range: BatteryHistoryRange
-
-    @State private var hoveredBucket: BatteryHistoryBucket?
+    @Binding var hoveredBucket: BatteryHistoryBucket?
 
     private let bucketCount = 30
     private let chartHeight: CGFloat = 92
@@ -21,18 +20,6 @@ struct BatteryHistoryChart: View {
                 Text(range.chartTitle)
                     .font(.caption.weight(.medium))
                     .foregroundStyle(.secondary)
-
-                Spacer()
-
-                if let hoveredBucket, let sample = hoveredBucket.sample {
-                    Text("\(sample.percentage)% at \(BatteryDateFormatters.time.string(from: sample.timestamp))")
-                        .font(.caption.monospacedDigit())
-                        .foregroundStyle(.primary)
-                } else {
-                    Text("Hover a bar")
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
-                }
             }
             .frame(height: 18)
 
