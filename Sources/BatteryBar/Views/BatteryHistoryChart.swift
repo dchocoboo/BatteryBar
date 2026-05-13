@@ -1,9 +1,12 @@
+import Dispatch
 import SwiftUI
 
 struct BatteryHistoryChart: View {
     let samples: [BatterySample]
     let range: BatteryHistoryRange
     @Binding var hoveredBucket: BatteryHistoryBucket?
+
+    @State private var clearHoverWorkItem: DispatchWorkItem?
 
     private let bucketCount = 30
     private let chartHeight: CGFloat = 92
@@ -24,7 +27,11 @@ struct BatteryHistoryChart: View {
                         isHovered: hoveredBucket?.id == bucket.id
                     )
                     .onHover { isHovering in
-                        hoveredBucket = isHovering ? bucket : nil
+                        if isHovering {
+                            showHover(bucket)
+                        } else {
+                            scheduleHoverClear(for: bucket)
+                        }
                     }
                 }
             }
@@ -38,6 +45,33 @@ struct BatteryHistoryChart: View {
             .font(.caption2)
             .foregroundStyle(.tertiary)
         }
+        .onDisappear {
+            clearHoverWorkItem?.cancel()
+        }
+    }
+
+    private func showHover(_ bucket: BatteryHistoryBucket) {
+        clearHoverWorkItem?.cancel()
+        clearHoverWorkItem = nil
+
+        withAnimation(.easeInOut(duration: 0.14)) {
+            hoveredBucket = bucket
+        }
+    }
+
+    private func scheduleHoverClear(for bucket: BatteryHistoryBucket) {
+        clearHoverWorkItem?.cancel()
+
+        let workItem = DispatchWorkItem {
+            guard hoveredBucket?.id == bucket.id else { return }
+
+            withAnimation(.easeOut(duration: 0.18)) {
+                hoveredBucket = nil
+            }
+        }
+
+        clearHoverWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1, execute: workItem)
     }
 }
 

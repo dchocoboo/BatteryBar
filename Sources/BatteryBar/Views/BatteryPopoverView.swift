@@ -19,6 +19,9 @@ struct BatteryPopoverView: View {
         }
         .padding(18)
         .frame(width: 380, height: 202)
+        .onChange(of: selectedRange) { _ in
+            hoveredBucket = nil
+        }
     }
 
     private var topControls: some View {
@@ -52,6 +55,8 @@ struct BatteryPopoverView: View {
                     .font(.caption.monospacedDigit())
                     .foregroundStyle(.secondary)
             }
+            .transition(.opacity)
+            .animation(.easeInOut(duration: 0.14), value: sample.id)
         } else {
             Color.clear
         }
