@@ -16,6 +16,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         configureStatusItem()
         configurePopover()
+        LoginItemManager.enableLaunchAtLogin()
 
         monitor.onStatusChange = { [weak self] status in
             self?.updateStatusIcon(status)

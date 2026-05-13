@@ -10,6 +10,13 @@ every two minutes and displays battery history as 30 hoverable bars across
 ./script/build_and_run.sh
 ```
 
+The run script builds the app, copies it to `/Applications/BatteryBar.app`, and
+launches it from there. Set `BATTERYBAR_INSTALL_DIR` to install somewhere else.
+
+On launch, BatteryBar also registers itself as a login item so it starts after
+boot. macOS may still ask for approval in System Settings depending on local
+security policy.
+
 Battery samples are stored at:
 
 ```text

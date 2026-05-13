@@ -13,6 +13,8 @@ APP_CONTENTS="$APP_BUNDLE/Contents"
 APP_MACOS="$APP_CONTENTS/MacOS"
 APP_BINARY="$APP_MACOS/$APP_NAME"
 INFO_PLIST="$APP_CONTENTS/Info.plist"
+INSTALL_DIR="${BATTERYBAR_INSTALL_DIR:-/Applications}"
+INSTALL_BUNDLE="$INSTALL_DIR/$APP_NAME.app"
 
 pkill -x "$APP_NAME" >/dev/null 2>&1 || true
 
@@ -47,8 +49,15 @@ cat >"$INFO_PLIST" <<PLIST
 </plist>
 PLIST
 
+install_app() {
+  mkdir -p "$INSTALL_DIR"
+  rm -rf "$INSTALL_BUNDLE"
+  /usr/bin/ditto "$APP_BUNDLE" "$INSTALL_BUNDLE"
+}
+
 open_app() {
-  /usr/bin/open -n "$APP_BUNDLE"
+  install_app
+  /usr/bin/open -n "$INSTALL_BUNDLE"
 }
 
 case "$MODE" in
@@ -56,7 +65,8 @@ case "$MODE" in
     open_app
     ;;
   --debug|debug)
-    lldb -- "$APP_BINARY"
+    install_app
+    lldb -- "$INSTALL_BUNDLE/Contents/MacOS/$APP_NAME"
     ;;
   --logs|logs)
     open_app
