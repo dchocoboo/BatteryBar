@@ -18,11 +18,11 @@ struct BatteryPopoverView: View {
                 .frame(height: 124)
         }
         .padding(18)
-        .frame(width: 380, height: 220)
+        .frame(width: 380, height: 202)
     }
 
     private var topControls: some View {
-        HStack(alignment: .center, spacing: 14) {
+        HStack(alignment: .center, spacing: 10) {
             Picker("History range", selection: $selectedRange) {
                 ForEach(BatteryHistoryRange.allCases) { range in
                     Text(range.title)
@@ -36,7 +36,7 @@ struct BatteryPopoverView: View {
             Spacer()
 
             hoverDetail
-                .frame(width: 116, alignment: .trailing)
+                .frame(width: 92, alignment: .trailing)
         }
         .frame(height: 32)
     }

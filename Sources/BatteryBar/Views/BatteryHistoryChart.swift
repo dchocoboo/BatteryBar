@@ -16,13 +16,6 @@ struct BatteryHistoryChart: View {
         )
 
         VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                Text(range.chartTitle)
-                    .font(.caption.weight(.medium))
-                    .foregroundStyle(.secondary)
-            }
-            .frame(height: 18)
-
             HStack(alignment: .bottom, spacing: 4) {
                 ForEach(buckets) { bucket in
                     BatteryHistoryBar(

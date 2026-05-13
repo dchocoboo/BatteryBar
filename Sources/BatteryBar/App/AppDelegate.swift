@@ -42,7 +42,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func configurePopover() {
         popover.behavior = .transient
-        popover.contentSize = NSSize(width: 380, height: 278)
+        popover.contentSize = NSSize(width: 380, height: 202)
         popover.contentViewController = NSHostingController(
             rootView: BatteryPopoverView(monitor: monitor)
         )
@@ -78,7 +78,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if popover.isShown {
             popover.performClose(nil)
         } else {
-            popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+            let positioningRect = button.bounds.offsetBy(dx: 0, dy: 6)
+            popover.show(relativeTo: positioningRect, of: button, preferredEdge: .minY)
             popover.contentViewController?.view.window?.makeKey()
         }
     }
