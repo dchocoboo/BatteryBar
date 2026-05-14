@@ -21,6 +21,9 @@ This creates `dist/release/BatteryBar-0.1.0.zip` for GitHub Releases and
 prints its SHA-256 for Homebrew casks. The app is ad-hoc signed, not Developer
 ID signed or notarized.
 
+The app icon is generated from `script/generate_app_icon.swift` into
+`Resources/AppIcon.icns` and copied into packaged app bundles.
+
 The run script builds the app, copies it to `/Applications/BatteryBar.app`, and
 launches it from there. Set `BATTERYBAR_INSTALL_DIR` to install somewhere else.
 
