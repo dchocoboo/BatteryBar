@@ -5,6 +5,27 @@ every two minutes and displays battery history as 30 hoverable bars across
 1-hour, 3-hour, 6-hour, 12-hour, and 24-hour ranges. The popover also shows
 battery health and live charging watts.
 
+## Install on another Mac
+
+Install with Homebrew from the public tap:
+
+```bash
+brew install --cask dchocoboo/tap/batterybar
+```
+
+If macOS blocks the app because this early build is not Developer ID signed or
+notarized, install without quarantine:
+
+```bash
+brew install --cask --no-quarantine dchocoboo/tap/batterybar
+```
+
+To update later:
+
+```bash
+brew upgrade --cask dchocoboo/tap/batterybar
+```
+
 ## Run
 
 ```bash
