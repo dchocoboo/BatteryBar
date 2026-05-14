@@ -2,6 +2,7 @@ import Foundation
 
 enum BatteryHistoryRange: String, CaseIterable, Identifiable {
     case oneHour = "1h"
+    case threeHours = "3h"
     case sixHours = "6h"
     case twelveHours = "12h"
     case twentyFourHours = "24h"
@@ -16,6 +17,8 @@ enum BatteryHistoryRange: String, CaseIterable, Identifiable {
         switch self {
         case .oneHour:
             return "Last hour"
+        case .threeHours:
+            return "Last 3 hours"
         case .sixHours:
             return "Last 6 hours"
         case .twelveHours:
@@ -29,6 +32,8 @@ enum BatteryHistoryRange: String, CaseIterable, Identifiable {
         switch self {
         case .oneHour:
             return 60 * 60
+        case .threeHours:
+            return 3 * 60 * 60
         case .sixHours:
             return 6 * 60 * 60
         case .twelveHours:
@@ -42,6 +47,8 @@ enum BatteryHistoryRange: String, CaseIterable, Identifiable {
         switch self {
         case .oneHour:
             return "-1h"
+        case .threeHours:
+            return "-3h"
         case .sixHours:
             return "-6h"
         case .twelveHours:

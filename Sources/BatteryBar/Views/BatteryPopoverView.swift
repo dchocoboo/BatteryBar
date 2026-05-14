@@ -34,7 +34,7 @@ struct BatteryPopoverView: View {
             }
             .pickerStyle(.segmented)
             .labelsHidden()
-            .frame(width: 220)
+            .frame(width: 232)
 
             Spacer()
 
