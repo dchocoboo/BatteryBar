@@ -11,6 +11,16 @@ battery health and live charging watts.
 ./script/build_and_run.sh
 ```
 
+## Package
+
+```bash
+./script/package_release.sh 0.1.0
+```
+
+This creates `dist/release/BatteryBar-0.1.0.zip` for GitHub Releases and
+prints its SHA-256 for Homebrew casks. The app is ad-hoc signed, not Developer
+ID signed or notarized.
+
 The run script builds the app, copies it to `/Applications/BatteryBar.app`, and
 launches it from there. Set `BATTERYBAR_INSTALL_DIR` to install somewhere else.
 
