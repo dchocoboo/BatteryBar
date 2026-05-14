@@ -16,9 +16,11 @@ struct BatteryPopoverView: View {
                 hoveredBucket: $hoveredBucket
             )
                 .frame(height: 124)
+
+            BatteryMetricsTable(metrics: monitor.metrics)
         }
         .padding(18)
-        .frame(width: 380, height: 202)
+        .frame(width: 380, height: 296)
         .onChange(of: selectedRange) { _ in
             hoveredBucket = nil
         }

@@ -42,7 +42,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func configurePopover() {
         popover.behavior = .transient
-        popover.contentSize = NSSize(width: 380, height: 202)
+        popover.contentSize = NSSize(width: 380, height: 296)
         popover.contentViewController = NSHostingController(
             rootView: BatteryPopoverView(monitor: monitor)
         )

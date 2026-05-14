@@ -1,8 +1,10 @@
 import Foundation
+import IOKit
 import IOKit.ps
 
 protocol BatteryReading {
     func readStatus() -> BatteryStatus
+    func readMetrics() -> BatteryMetrics
 }
 
 struct IOKitBatteryReader: BatteryReading {
@@ -40,6 +42,34 @@ struct IOKitBatteryReader: BatteryReading {
         return .unavailable
     }
 
+    func readMetrics() -> BatteryMetrics {
+        let service = IOServiceGetMatchingService(kIOMainPortDefault, IOServiceMatching("AppleSmartBattery"))
+        guard service != 0 else {
+            return .unavailable
+        }
+        defer { IOObjectRelease(service) }
+
+        let designCapacity = registryIntValue("DesignCapacity", service: service)
+        let maximumCapacity = registryIntValue("AppleRawMaxCapacity", service: service)
+            ?? registryIntValue("MaxCapacity", service: service)
+            ?? registryIntValue("NominalChargeCapacity", service: service)
+        let voltage = registryIntValue("Voltage", service: service)
+        let amperage = registryIntValue("InstantAmperage", service: service)
+            ?? registryIntValue("Amperage", service: service)
+
+        let healthPercentage = healthPercentage(
+            maximumCapacity: maximumCapacity,
+            designCapacity: designCapacity
+        )
+        let watts = chargingWatts(voltageMillivolts: voltage, amperageMilliamps: amperage)
+
+        return BatteryMetrics(
+            healthPercentage: healthPercentage,
+            chargingWatts: watts,
+            updatedAt: Date()
+        )
+    }
+
     private func intValue(_ value: Any?) -> Int? {
         if let int = value as? Int {
             return int
@@ -62,5 +92,44 @@ struct IOKitBatteryReader: BatteryReading {
         }
 
         return false
+    }
+
+    private func registryIntValue(_ key: String, service: io_registry_entry_t) -> Int? {
+        guard
+            let value = IORegistryEntryCreateCFProperty(
+                service,
+                key as CFString,
+                kCFAllocatorDefault,
+                0
+            )?.takeRetainedValue()
+        else {
+            return nil
+        }
+
+        return intValue(value)
+    }
+
+    private func healthPercentage(maximumCapacity: Int?, designCapacity: Int?) -> Int? {
+        guard
+            let maximumCapacity,
+            let designCapacity,
+            designCapacity > 0
+        else {
+            return nil
+        }
+
+        let percentage = Int(round(Double(maximumCapacity) / Double(designCapacity) * 100))
+        return min(100, max(0, percentage))
+    }
+
+    private func chargingWatts(voltageMillivolts: Int?, amperageMilliamps: Int?) -> Double? {
+        guard
+            let voltageMillivolts,
+            let amperageMilliamps
+        else {
+            return nil
+        }
+
+        return Double(voltageMillivolts * amperageMilliamps) / 1_000_000
     }
 }
