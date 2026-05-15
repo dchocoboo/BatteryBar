@@ -40,12 +40,13 @@ final class BatteryMonitor: ObservableObject {
 
     func startLiveMetrics() {
         refreshStatus()
-        refreshMetrics()
+        refreshBatteryHealth()
+        refreshChargingWatts()
 
         metricsTimer?.invalidate()
         metricsTimer = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { [weak self] _ in
             Task { @MainActor in
-                self?.refreshMetrics()
+                self?.refreshChargingWatts()
             }
         }
         metricsTimer?.tolerance = 0.5
@@ -62,8 +63,14 @@ final class BatteryMonitor: ObservableObject {
         onStatusChange?(status)
     }
 
-    func refreshMetrics() {
-        metrics = reader.readMetrics()
+    func refreshBatteryHealth() {
+        metrics.healthPercentage = reader.readBatteryHealthPercentage()
+        metrics.updatedAt = Date()
+    }
+
+    func refreshChargingWatts() {
+        metrics.chargingWatts = reader.readChargingWatts()
+        metrics.updatedAt = Date()
     }
 
     func recordCurrentSample() {

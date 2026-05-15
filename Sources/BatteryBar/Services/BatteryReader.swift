@@ -4,7 +4,8 @@ import IOKit.ps
 
 protocol BatteryReading {
     func readStatus() -> BatteryStatus
-    func readMetrics() -> BatteryMetrics
+    func readBatteryHealthPercentage() -> Int?
+    func readChargingWatts() -> Double?
 }
 
 struct IOKitBatteryReader: BatteryReading {
@@ -42,32 +43,38 @@ struct IOKitBatteryReader: BatteryReading {
         return .unavailable
     }
 
-    func readMetrics() -> BatteryMetrics {
+    func readBatteryHealthPercentage() -> Int? {
+        withSmartBatteryService { service in
+            let designCapacity = registryIntValue("DesignCapacity", service: service)
+            let maximumCapacity = registryIntValue("AppleRawMaxCapacity", service: service)
+                ?? registryIntValue("MaxCapacity", service: service)
+                ?? registryIntValue("NominalChargeCapacity", service: service)
+
+            return healthPercentage(
+                maximumCapacity: maximumCapacity,
+                designCapacity: designCapacity
+            )
+        }
+    }
+
+    func readChargingWatts() -> Double? {
+        withSmartBatteryService { service in
+            let voltage = registryIntValue("Voltage", service: service)
+            let amperage = registryIntValue("InstantAmperage", service: service)
+                ?? registryIntValue("Amperage", service: service)
+
+            return chargingWatts(voltageMillivolts: voltage, amperageMilliamps: amperage)
+        }
+    }
+
+    private func withSmartBatteryService<T>(_ read: (io_registry_entry_t) -> T?) -> T? {
         let service = IOServiceGetMatchingService(kIOMainPortDefault, IOServiceMatching("AppleSmartBattery"))
         guard service != 0 else {
-            return .unavailable
+            return nil
         }
         defer { IOObjectRelease(service) }
 
-        let designCapacity = registryIntValue("DesignCapacity", service: service)
-        let maximumCapacity = registryIntValue("AppleRawMaxCapacity", service: service)
-            ?? registryIntValue("MaxCapacity", service: service)
-            ?? registryIntValue("NominalChargeCapacity", service: service)
-        let voltage = registryIntValue("Voltage", service: service)
-        let amperage = registryIntValue("InstantAmperage", service: service)
-            ?? registryIntValue("Amperage", service: service)
-
-        let healthPercentage = healthPercentage(
-            maximumCapacity: maximumCapacity,
-            designCapacity: designCapacity
-        )
-        let watts = chargingWatts(voltageMillivolts: voltage, amperageMilliamps: amperage)
-
-        return BatteryMetrics(
-            healthPercentage: healthPercentage,
-            chargingWatts: watts,
-            updatedAt: Date()
-        )
+        return read(service)
     }
 
     private func intValue(_ value: Any?) -> Int? {
