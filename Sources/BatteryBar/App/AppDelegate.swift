@@ -100,6 +100,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         loginItem.target = self
         loginItem.state = LoginItemManager.isLaunchAtLoginPreferred ? .on : .off
         menu.addItem(loginItem)
+        menu.addItem(.separator())
+
+        let quitItem = NSMenuItem(
+            title: "Quit BatteryBar",
+            action: #selector(quitBatteryBar),
+            keyEquivalent: "q"
+        )
+        quitItem.target = self
+        menu.addItem(quitItem)
 
         if let event = NSApp.currentEvent {
             NSMenu.popUpContextMenu(menu, with: event, for: button)
@@ -110,6 +119,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func toggleLaunchAtLogin() {
         LoginItemManager.setLaunchAtLoginEnabled(!LoginItemManager.isLaunchAtLoginPreferred)
+    }
+
+    @objc private func quitBatteryBar() {
+        monitor.stop()
+        NSApp.terminate(nil)
     }
 }
 
