@@ -21,8 +21,6 @@ final class BatteryMonitor: ObservableObject {
 
     func start() {
         samples = store.load()
-        refreshStatus()
-        refreshMetrics()
         recordCurrentSample()
 
         sampleTimer?.invalidate()
@@ -31,19 +29,29 @@ final class BatteryMonitor: ObservableObject {
                 self?.recordCurrentSample()
             }
         }
-
-        metricsTimer?.invalidate()
-        metricsTimer = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { [weak self] _ in
-            Task { @MainActor in
-                self?.refreshStatus()
-                self?.refreshMetrics()
-            }
-        }
+        sampleTimer?.tolerance = 20
     }
 
     func stop() {
         sampleTimer?.invalidate()
         sampleTimer = nil
+        stopLiveMetrics()
+    }
+
+    func startLiveMetrics() {
+        refreshStatus()
+        refreshMetrics()
+
+        metricsTimer?.invalidate()
+        metricsTimer = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { [weak self] _ in
+            Task { @MainActor in
+                self?.refreshMetrics()
+            }
+        }
+        metricsTimer?.tolerance = 0.5
+    }
+
+    func stopLiveMetrics() {
         metricsTimer?.invalidate()
         metricsTimer = nil
     }

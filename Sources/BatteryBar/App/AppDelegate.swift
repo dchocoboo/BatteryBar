@@ -42,6 +42,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func configurePopover() {
         popover.behavior = .transient
+        popover.delegate = self
         popover.contentSize = NSSize(width: 380, height: 296)
         popover.contentViewController = NSHostingController(
             rootView: BatteryPopoverView(monitor: monitor)
@@ -79,6 +80,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             popover.performClose(nil)
         } else {
             let positioningRect = button.bounds.offsetBy(dx: 0, dy: 6)
+            monitor.startLiveMetrics()
             popover.show(relativeTo: positioningRect, of: button, preferredEdge: .minY)
             popover.contentViewController?.view.window?.makeKey()
         }
@@ -108,5 +110,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func toggleLaunchAtLogin() {
         LoginItemManager.setLaunchAtLoginEnabled(!LoginItemManager.isLaunchAtLoginPreferred)
+    }
+}
+
+extension AppDelegate: NSPopoverDelegate {
+    func popoverDidClose(_ notification: Notification) {
+        monitor.stopLiveMetrics()
     }
 }
